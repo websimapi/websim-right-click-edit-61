@@ -868,54 +868,9 @@
 
         let currentEditModal = null;
 
-        function closeEditModal() {
-            if (currentEditModal && currentEditModal.parentElement) {
-                document.body.removeChild(currentEditModal);
-            }
-            currentEditModal = null;
-        }
-
-        // Helper function to dynamically add edit containers
-        function addEditContainer(modal, initialTagId, initialType) {
-            const containersDiv = modal.querySelector('#edit-containers');
-            if (!containersDiv) {
-                console.error("Edit containers div not found in modal.");
-                return;
-            }
-
-            const editContainer = document.createElement('div');
-            editContainer.className = 'edit-container';
-            
-            const currentTagId = initialTagId || '';
-            const displayTagId = currentTagId || 'N/A (Missing ID)';
-
-            // Store tagId (may be empty string) and type in data attributes for robust retrieval
-            editContainer.setAttribute('data-tag-id', currentTagId);
-            editContainer.setAttribute('data-type', initialType.toLowerCase());
-
-            editContainer.innerHTML = `
-                <div class="edit-header">Edit ${initialType.toUpperCase()} Content (Tag ID: ${displayTagId})</div>
-                <textarea placeholder="Enter your edit prompt here..."></textarea>
-                <button class="remove-edit">Remove Edit</button>
-            `;
-            containersDiv.appendChild(editContainer);
-
-            // Scroll to the new edit container
-            containersDiv.scrollTop = containersDiv.scrollHeight;
-
-            const removeButton = editContainer.querySelector('.remove-edit');
-            removeButton.addEventListener('click', () => {
-                containersDiv.removeChild(editContainer);
-                if (containersDiv.children.length === 0) {
-                    closeEditModal(); 
-                }
-            });
-        }
-        
         function showEditModal(target, tagId, type) {
-            
             if (currentEditModal) {
-                // If a modal is already open, add a new edit container to it
+                // If a modal is already open, update it instead of creating a new one
                 addEditContainer(currentEditModal, tagId, type);
                 return;
             }
@@ -933,71 +888,95 @@
             `;
             document.body.appendChild(modal);
 
-            currentEditModal = modal;
-
+            const editContainers = modal.querySelector('#edit-containers');
             const addEditButton = modal.querySelector('.add-edit');
             const submitButton = modal.querySelector('.submit');
             const cancelButton = modal.querySelector('.cancel');
 
-            // Add the first edit container 
-            addEditContainer(modal, tagId, type); 
+            function addEditContainer(modal, initialTagId = tagId, initialType = type) {
+                const editContainers = modal.querySelector('#edit-containers');
+                const editContainer = document.createElement('div');
+                editContainer.className = 'edit-container';
+                
+                // Store tagId and type in data attributes for robust retrieval
+                editContainer.setAttribute('data-tag-id', initialTagId);
+                editContainer.setAttribute('data-type', initialType.toLowerCase());
+
+                editContainer.innerHTML = `
+                    <div class="edit-header">Edit ${initialType.toUpperCase()} Content (Tag ID: ${initialTagId})</div>
+                    <textarea placeholder="Enter your edit prompt here..."></textarea>
+                    <button class="remove-edit">Remove Edit</button>
+                `;
+                editContainers.appendChild(editContainer);
+
+                const removeButton = editContainer.querySelector('.remove-edit');
+                removeButton.addEventListener('click', () => {
+                    editContainers.removeChild(editContainer);
+                });
+            }
+
+            addEditContainer(modal); // Add the first edit container
 
             addEditButton.addEventListener('click', () => {
-                const newTagId = prompt("Enter the tag ID for the new edit (required for custom edits):");
+                const newTagId = prompt("Enter the tag ID for the new edit:");
                 const newType = prompt("Enter the type for the new edit (HTML/CSS/JS/ALL):");
                 if (newTagId && newType) {
-                    addEditContainer(modal, newTagId.trim(), newType.trim());
-                } else if (newTagId === null || newType === null) {
-                    // Canceled prompt
-                } else {
-                    showToast("Tag ID and Type are required for adding a new edit manually.");
+                    addEditContainer(modal, newTagId, newType);
                 }
             });
 
             modal.style.display = 'block';
-            modal.querySelector('textarea').focus();
+            editContainers.querySelector('textarea').focus();
 
             function handleSubmit() {
-                const operations = Array.from(modal.querySelectorAll('.edit-container')).map(container => {
-                    const textarea = container.querySelector('textarea');
-                    const currentTagId = container.getAttribute('data-tag-id');
-                    const prompt = textarea.value.trim();
-                    
-                    if (prompt === '') {
-                        return null; // Skip empty prompts
-                    }
-
-                    // Ensure tagId is present for a meaningful edit operation
-                    if (!currentTagId || currentTagId.length === 0) {
-                        console.warn('Skipping edit operation due to missing Tag ID:', prompt);
-                        showToast(`Skipped edit: Missing Tag ID for prompt: "${prompt.substring(0, 30)}..."`);
-                        return null; 
-                    }
-                    
-                    return {
-                        type: "edit_element",
-                        tagId: currentTagId,
-                        prompt: prompt,
-                    };
-                }).filter(op => op !== null); // Filter out skipped operations
-
-                if (operations.length === 0) {
-                    closeEditModal();
-                    return;
-                }
+                const operations = Array.from(editContainers.querySelectorAll('.edit-container')).map(container => {
+                        const textarea = container.querySelector('textarea');
+                        // Retrieve tagId from data attribute for robustness
+                        const currentTagId = container.getAttribute('data-tag-id');
+                        
+                        return {
+                            type: "edit_element",
+                            tagId: currentTagId,
+                            prompt: textarea.value.trim(),
+                        };
+                    }).filter(op => op.prompt !== ''); // Filter out empty prompts
 
                 const editPayload = {
                     version: 1,
                     operations: operations,
                 };
+
+                // --- Start verbose logging for debugging (User Request) ---
+                console.log("--- Edit Submission Attempt ---");
+                console.log("Raw Edit Payload:", JSON.parse(JSON.stringify(editPayload)));
                 
+                const command = `!edit ${JSON.stringify(editPayload)}`;
+                
+                console.log("Full Command String (to be sent via parentApi.navigate):", command);
+                
+                editPayload.operations.forEach((op, index) => {
+                    console.log(`Operation ${index + 1}:`);
+                    console.log(`  Tag ID: ${op.tagId}`);
+                    console.log(`  Type: ${op.type}`);
+                    console.log(`  Prompt Length: ${op.prompt.length}`);
+                    // Display a snippet of the prompt, escaping newlines for single-line console view
+                    console.log(`  Prompt Snippet: "${op.prompt.substring(0, 100).replace(/\n/g, '\\n')}..."`);
+                });
+                
+                console.log("-------------------------------");
+                // --- End verbose logging for debugging ---
+
                 parentApi.navigate({
-                    method: "edit", // Changed from "eval" to "edit"
-                    version: editPayload.version,
-                    operations: editPayload.operations,
+                    method: "eval",
+                    command: command,
                     source: "edit",
                 }).catch(error => console.error('Error during edit:', error));
                 closeEditModal();
+            }
+
+            function closeEditModal() {
+                document.body.removeChild(modal);
+                currentEditModal = null;
             }
 
             submitButton.onclick = handleSubmit;
@@ -1011,6 +990,8 @@
                     closeEditModal();
                 }
             });
+
+            currentEditModal = modal;
         }
 
         function copyToClipboard(sectionId, type) {
