@@ -47,6 +47,22 @@ function memoizePromise(fn) {
     };
 }
 
+// Mock uuidv4 since it's used in the reference code for renderVideo
+function uuidv4() {
+    return 'xxxxxxxx-xxxx-4xxx-yxxx-xxxxxxxxxxxx'.replace(/[xy]/g, function(c) {
+        var r = Math.random() * 16 | 0, v = c == 'x' ? r : (r & 0x3 | 0x8);
+        return v.toString(16);
+    });
+}
+
+// Mock Chat class
+class Chat {
+    constructor() {
+        // Simple placeholder for chat functionality
+    }
+}
+
+
 // --- Parent API Initialization (New Structure) ---
 
 // Mock/Define __WEBSIM_DATA__ structure for clarity, assuming it exists on window
@@ -132,6 +148,206 @@ const parentApi =
 
 // For the Home page
 window.__get_params__ = memoizePromise(parentApi.getParams);
+
+// --- Runtime Initialization & Event Hijacking ---
+
+function hijackEvents() {
+    // Send pointer down events to the parent
+    document.addEventListener("pointerdown", () => {
+        // Only needed when in an iframe, not in top level frame
+        if (!__WEBSIM_DATA__.isTopLevelFrame) {
+            void parentApi.iframeInteraction();
+        }
+    });
+
+    window.__iframeInteraction = () => {
+        if (!__WEBSIM_DATA__.isTopLevelFrame) {
+            void parentApi.iframeInteraction();
+        }
+    };
+
+    const handleLinkClick = (event) => {
+        let target = event.target;
+        if (!target) return;
+        const closest = target?.closest("a");
+        if (closest) {
+            target = closest;
+        }
+        if (target instanceof HTMLAnchorElement) {
+            const href = target.getAttribute("href") || "";
+
+            if (/^javascript:/i.test(href) || /^blob:/i.test(href) || /^data:/i.test(href)) {
+                return;
+            }
+
+            const isNewTab =
+                event.button === 1 || // middle clicks
+                event.metaKey ||
+                event.ctrlKey || // and command clicks
+                target.target === "_blank";
+
+            // Assuming internal links start with / or are relative paths when embedded
+            const isInternalLinkCandidate = href.startsWith('/') || !href.includes(':');
+
+            if (isInternalLinkCandidate && !__WEBSIM_DATA__.isTopLevelFrame) {
+                event.preventDefault();
+                void parentApi.navigate({
+                    method: "GET",
+                    url: href,
+                    target: isNewTab ? "_blank" : undefined,
+                    source: "link",
+                });
+            }
+        }
+    };
+
+    // Intercept click events
+    window.addEventListener("auxclick", (event) => {
+        if (event.which !== 2) return;
+        handleLinkClick(event);
+    });
+
+    window.addEventListener("click", (event) => {
+        const target = event.target;
+
+        if (event.defaultPrevented) {
+            return;
+        }
+
+        // Handle logout and login buttons
+        if (target instanceof HTMLButtonElement) {
+            if (target.id === "google-login-button") {
+                event.preventDefault();
+                void parentApi.login();
+                return;
+            }
+        }
+
+        handleLinkClick(event);
+    });
+
+    // Register a listener for CMD+L to focus the URL bar
+    window.addEventListener("keydown", (event) => {
+        if (event.defaultPrevented) {
+            return;
+        }
+
+        if (event.key === "k" && (event.metaKey || event.ctrlKey)) {
+            event.preventDefault();
+            void parentApi.focusUrl();
+        }
+    });
+
+    // Keep track of the most recent title to avoid sending duplicate messages
+    let currentTitle = "";
+    const setTitle = (title) => {
+        if (title !== currentTitle) {
+            currentTitle = title;
+            void parentApi.setTitle(title);
+        }
+    };
+
+    // Update the title every second.
+    window.setInterval(() => setTitle(document.title), 1000);
+}
+
+
+function initRuntime() {
+    const api = parentApi;
+
+    const notSupported = () => { throw new Error("Feature not supported"); };
+
+    const textToSpeechWrapper = (args) => {
+        const body = {
+            text: args.text,
+            voice: args.voice,
+            voice_sample: args.voice_sample,
+        };
+        if (args.voice_sample) {
+            body.voice_sample = new URL(
+                args.voice_sample,
+                window.location.origin
+            ).toString();
+        }
+        return api.generateTextToSpeech(body);
+    };
+
+    const addEventListenerWrapper = (eventType, callback) => {
+        void api.addEventListener(eventType);
+
+        const messageHandler = (event) => {
+            if (event.data?.type === eventType) {
+                callback(event.data.data);
+            }
+        };
+
+        window.addEventListener("message", messageHandler);
+
+        return () => {
+            window.removeEventListener("message", messageHandler);
+        };
+    };
+
+    const uploadWrapper = (file) => api.uploadFile(file);
+    const imageGenWrapper = (args) => api.generateImage2(args);
+
+    const renderVideoFn = (args) => {
+        const id = uuidv4();
+
+        const messageHandler = (event) => {
+            if (event.data?.type === "render:progress" && event.data.id === id) {
+                if (args.onProgress) args.onProgress(event.data.data);
+            }
+        };
+
+        window.addEventListener("message", messageHandler);
+
+        const renderPromise = api._renderVideo(
+            JSON.parse(
+                JSON.stringify({
+                    inputProps: args.inputProps,
+                    composition: args.composition,
+                    options: args.options,
+                    id,
+                })
+            )
+        );
+
+        renderPromise.finally(() => {
+            window.removeEventListener("message", messageHandler);
+        });
+
+        return renderPromise;
+    };
+
+    // Ensure window.websim is defined using the provided methods
+    window.websim = Object.freeze({
+        getUser: memoizePromise(api.getUser),
+        getCurrentUser: memoizePromise(api.getUser),
+        getDistinctId: memoizePromise(api.getDistinctId),
+        getBootstrap: memoizePromise(api.getBootstrap),
+        getCreatedBy: memoizePromise(api.getCreatedBy),
+        getCreator: memoizePromise(api.getCreator),
+        getCurrentProject: memoizePromise(api.getCurrentProject),
+        getColorScheme: api.getColorScheme,
+        postComment: api.postComment,
+        renderVideo: renderVideoFn,
+        addEventListener: addEventListenerWrapper,
+        upload: uploadWrapper,
+        chat: new Chat(),
+        imageGen: imageGenWrapper,
+        textToSpeech: textToSpeechWrapper,
+        experimental: Object.freeze({
+            v0: Object.freeze({
+                login: api.login,
+                save: notSupported,
+                getHTML: notSupported,
+            }),
+        }),
+        internal_only_experimental: {},
+    });
+}
+
 
 // --- Global UI and Feature Logic ---
 
@@ -571,6 +787,10 @@ window.handleContentClick = handleContentClick; // Attach globally
 // --- Initialization ---
 
 document.addEventListener('DOMContentLoaded', () => {
+
+    // Initialize WebSim runtime hooks
+    initRuntime();
+    hijackEvents();
 
     // Initialize drag mode toggle button event listener (if using feature 10 button)
     const toggleDragModeBtn = document.getElementById('toggleDragMode');
