@@ -947,9 +947,8 @@
                 };
 
                 const jsonPayloadString = JSON.stringify(editPayload);
-                // Fix attempt based on debugging: Wrap the JSON payload in single quotes for robust command argument passing 
-                // in the websim shell environment, ensuring the JSON string is treated as a single argument to !edit.
-                const command = `!edit '${jsonPayloadString}'`;
+                // Fixing edit route parsing issue by removing external quotes around JSON payload.
+                const command = `!edit ${jsonPayloadString}`;
                 
                 // --- Start verbose logging for debugging (User Request) ---
                 console.log("--- Edit Submission Attempt (Start) ---");
