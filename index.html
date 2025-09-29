@@ -956,11 +956,11 @@
                 // Fixing edit route parsing issue by removing external quotes around JSON payload.
                 const command = `!edit ${jsonPayloadString}`;
                 
-                // --- Start verbose logging for debugging (User Request) ---
-                console.groupCollapsed("--- Edit Submission Attempt (Verbose Logging) ---");
-                console.log("1. Edit Payload Object:", JSON.parse(JSON.stringify(editPayload)));
+                // --- Start verbose logging for debugging (Extremely Verbose Logging) ---
+                console.groupCollapsed("--- Edit Submission Attempt (Extremely Verbose Logging) ---");
+                console.log("1. Edit Payload Object (Structured):", JSON.parse(JSON.stringify(editPayload)));
                 console.log("2. JSON Stringified Payload:", jsonPayloadString);
-                console.log("3. Full Command String (to be sent):", command);
+                console.log("3. Full Command String (Input for navigation):", command);
                 
                 const navigatePayload = {
                     method: "eval",
@@ -970,10 +970,13 @@
                 
                 console.log("4. Final Payload object sent via parentApi.navigate:", navigatePayload);
 
-                // Detailed inspection of the command string characters
                 console.log("5. Command String Length:", command.length);
-                const commandParts = command.split(/\s+/); // Split by whitespace to see tokens
-                console.log("6. Command Tokens (might show command separation issues):", commandParts);
+                
+                // Debugging characters to catch invisible issues or unexpected encoding
+                console.log("6. Command String Characters (Hex):", Array.from(command).map(c => c.charCodeAt(0).toString(16)).join(' '));
+
+                // Logging URL encoded version, just in case 'navigate' treats it as a URL parameter
+                console.log("7. URL Encoded Command String:", encodeURIComponent(command));
                 
                 console.groupEnd();
                 // --- End verbose logging for debugging ---
