@@ -868,9 +868,54 @@
 
         let currentEditModal = null;
 
+        function closeEditModal() {
+            if (currentEditModal && currentEditModal.parentElement) {
+                document.body.removeChild(currentEditModal);
+            }
+            currentEditModal = null;
+        }
+
+        // Helper function to dynamically add edit containers
+        function addEditContainer(modal, initialTagId, initialType) {
+            const containersDiv = modal.querySelector('#edit-containers');
+            if (!containersDiv) {
+                console.error("Edit containers div not found in modal.");
+                return;
+            }
+
+            const editContainer = document.createElement('div');
+            editContainer.className = 'edit-container';
+            
+            const currentTagId = initialTagId || '';
+            const displayTagId = currentTagId || 'N/A (Missing ID)';
+
+            // Store tagId (may be empty string) and type in data attributes for robust retrieval
+            editContainer.setAttribute('data-tag-id', currentTagId);
+            editContainer.setAttribute('data-type', initialType.toLowerCase());
+
+            editContainer.innerHTML = `
+                <div class="edit-header">Edit ${initialType.toUpperCase()} Content (Tag ID: ${displayTagId})</div>
+                <textarea placeholder="Enter your edit prompt here..."></textarea>
+                <button class="remove-edit">Remove Edit</button>
+            `;
+            containersDiv.appendChild(editContainer);
+
+            // Scroll to the new edit container
+            containersDiv.scrollTop = containersDiv.scrollHeight;
+
+            const removeButton = editContainer.querySelector('.remove-edit');
+            removeButton.addEventListener('click', () => {
+                containersDiv.removeChild(editContainer);
+                if (containersDiv.children.length === 0) {
+                    closeEditModal(); 
+                }
+            });
+        }
+        
         function showEditModal(target, tagId, type) {
+            
             if (currentEditModal) {
-                // If a modal is already open, update it instead of creating a new one
+                // If a modal is already open, add a new edit container to it
                 addEditContainer(currentEditModal, tagId, type);
                 return;
             }
@@ -888,40 +933,14 @@
             `;
             document.body.appendChild(modal);
 
-            const editContainers = modal.querySelector('#edit-containers');
+            currentEditModal = modal;
+
             const addEditButton = modal.querySelector('.add-edit');
             const submitButton = modal.querySelector('.submit');
             const cancelButton = modal.querySelector('.cancel');
 
-            function addEditContainer(modal, initialTagId = tagId, initialType = type) {
-                const editContainers = modal.querySelector('#edit-containers');
-                const editContainer = document.createElement('div');
-                editContainer.className = 'edit-container';
-                
-                const currentTagId = initialTagId || ''; // Use empty string if initialTagId is null/undefined
-                const displayTagId = currentTagId || 'N/A (Missing ID)';
-
-                // Store tagId (may be empty string) and type in data attributes for robust retrieval
-                editContainer.setAttribute('data-tag-id', currentTagId);
-                editContainer.setAttribute('data-type', initialType.toLowerCase());
-
-                editContainer.innerHTML = `
-                    <div class="edit-header">Edit ${initialType.toUpperCase()} Content (Tag ID: ${displayTagId})</div>
-                    <textarea placeholder="Enter your edit prompt here..."></textarea>
-                    <button class="remove-edit">Remove Edit</button>
-                `;
-                editContainers.appendChild(editContainer);
-
-                const removeButton = editContainer.querySelector('.remove-edit');
-                removeButton.addEventListener('click', () => {
-                    editContainers.removeChild(editContainer);
-                    if (editContainers.children.length === 0) {
-                        closeEditModal(); // Close modal if last container is removed
-                    }
-                });
-            }
-
-            addEditContainer(modal); // Add the first edit container
+            // Add the first edit container 
+            addEditContainer(modal, tagId, type); 
 
             addEditButton.addEventListener('click', () => {
                 const newTagId = prompt("Enter the tag ID for the new edit (required for custom edits):");
@@ -936,10 +955,10 @@
             });
 
             modal.style.display = 'block';
-            editContainers.querySelector('textarea').focus();
+            modal.querySelector('textarea').focus();
 
             function handleSubmit() {
-                const operations = Array.from(editContainers.querySelectorAll('.edit-container')).map(container => {
+                const operations = Array.from(modal.querySelectorAll('.edit-container')).map(container => {
                     const textarea = container.querySelector('textarea');
                     const currentTagId = container.getAttribute('data-tag-id');
                     const prompt = textarea.value.trim();
@@ -980,11 +999,6 @@
                 closeEditModal();
             }
 
-            function closeEditModal() {
-                document.body.removeChild(modal);
-                currentEditModal = null;
-            }
-
             submitButton.onclick = handleSubmit;
             cancelButton.onclick = closeEditModal;
 
@@ -996,8 +1010,6 @@
                     closeEditModal();
                 }
             });
-
-            currentEditModal = modal;
         }
 
         function copyToClipboard(sectionId, type) {
