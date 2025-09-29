@@ -992,8 +992,9 @@
                 };
                 
                 parentApi.navigate({
-                    method: "eval",
-                    command: `!edit ${JSON.stringify(editPayload)}`,
+                    method: "edit", // Changed from "eval" to "edit"
+                    version: editPayload.version,
+                    operations: editPayload.operations,
                     source: "edit",
                 }).catch(error => console.error('Error during edit:', error));
                 closeEditModal();
