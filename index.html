@@ -941,6 +941,12 @@
                         };
                     }).filter(op => op.prompt !== ''); // Filter out empty prompts
 
+                if (operations.length === 0) {
+                    showToast('No prompt provided for edit.');
+                    closeEditModal();
+                    return;
+                }
+
                 const editPayload = {
                     version: 1,
                     operations: operations,
@@ -951,20 +957,10 @@
                 const command = `!edit ${jsonPayloadString}`;
                 
                 // --- Start verbose logging for debugging (User Request) ---
-                console.log("--- Edit Submission Attempt (Start) ---");
-                console.log("Raw Edit Payload:", JSON.parse(JSON.stringify(editPayload)));
-                console.log("JSON Payload String:", jsonPayloadString);
-                
-                console.log("Full Command String (to be sent via parentApi.navigate):", command);
-                
-                editPayload.operations.forEach((op, index) => {
-                    console.log(`Operation ${index + 1}:`);
-                    console.log(`  Tag ID: ${op.tagId}`);
-                    console.log(`  Type: ${op.type}`);
-                    console.log(`  Prompt Length: ${op.prompt.length}`);
-                    // Display a snippet of the prompt, escaping newlines for single-line console view
-                    console.log(`  Prompt Snippet: "${op.prompt.substring(0, 100).replace(/\n/g, '\\n')}..."`);
-                });
+                console.groupCollapsed("--- Edit Submission Attempt (Verbose Logging) ---");
+                console.log("1. Edit Payload Object:", JSON.parse(JSON.stringify(editPayload)));
+                console.log("2. JSON Stringified Payload:", jsonPayloadString);
+                console.log("3. Full Command String (to be sent):", command);
                 
                 const navigatePayload = {
                     method: "eval",
@@ -972,8 +968,14 @@
                     source: "edit",
                 };
                 
-                console.log("Payload object sent to parentApi.navigate:", JSON.parse(JSON.stringify(navigatePayload)));
-                console.log("--- Edit Submission Attempt (End) ---");
+                console.log("4. Final Payload object sent via parentApi.navigate:", navigatePayload);
+
+                // Detailed inspection of the command string characters
+                console.log("5. Command String Length:", command.length);
+                const commandParts = command.split(/\s+/); // Split by whitespace to see tokens
+                console.log("6. Command Tokens (might show command separation issues):", commandParts);
+                
+                console.groupEnd();
                 // --- End verbose logging for debugging ---
 
                 parentApi.navigate(navigatePayload).catch(error => console.error('Error during edit:', error));
