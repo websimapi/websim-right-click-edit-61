@@ -898,12 +898,15 @@
                 const editContainer = document.createElement('div');
                 editContainer.className = 'edit-container';
                 
-                // Store tagId and type in data attributes for robust retrieval
-                editContainer.setAttribute('data-tag-id', initialTagId);
+                const currentTagId = initialTagId || ''; // Use empty string if initialTagId is null/undefined
+                const displayTagId = currentTagId || 'N/A (Missing ID)';
+
+                // Store tagId (may be empty string) and type in data attributes for robust retrieval
+                editContainer.setAttribute('data-tag-id', currentTagId);
                 editContainer.setAttribute('data-type', initialType.toLowerCase());
 
                 editContainer.innerHTML = `
-                    <div class="edit-header">Edit ${initialType.toUpperCase()} Content (Tag ID: ${initialTagId})</div>
+                    <div class="edit-header">Edit ${initialType.toUpperCase()} Content (Tag ID: ${displayTagId})</div>
                     <textarea placeholder="Enter your edit prompt here..."></textarea>
                     <button class="remove-edit">Remove Edit</button>
                 `;
@@ -912,16 +915,23 @@
                 const removeButton = editContainer.querySelector('.remove-edit');
                 removeButton.addEventListener('click', () => {
                     editContainers.removeChild(editContainer);
+                    if (editContainers.children.length === 0) {
+                        closeEditModal(); // Close modal if last container is removed
+                    }
                 });
             }
 
             addEditContainer(modal); // Add the first edit container
 
             addEditButton.addEventListener('click', () => {
-                const newTagId = prompt("Enter the tag ID for the new edit:");
+                const newTagId = prompt("Enter the tag ID for the new edit (required for custom edits):");
                 const newType = prompt("Enter the type for the new edit (HTML/CSS/JS/ALL):");
                 if (newTagId && newType) {
-                    addEditContainer(modal, newTagId, newType);
+                    addEditContainer(modal, newTagId.trim(), newType.trim());
+                } else if (newTagId === null || newType === null) {
+                    // Canceled prompt
+                } else {
+                    showToast("Tag ID and Type are required for adding a new edit manually.");
                 }
             });
 
@@ -929,20 +939,39 @@
             editContainers.querySelector('textarea').focus();
 
             function handleSubmit() {
+                const operations = Array.from(editContainers.querySelectorAll('.edit-container')).map(container => {
+                    const textarea = container.querySelector('textarea');
+                    const currentTagId = container.getAttribute('data-tag-id');
+                    const prompt = textarea.value.trim();
+                    
+                    if (prompt === '') {
+                        return null; // Skip empty prompts
+                    }
+
+                    // Ensure tagId is present for a meaningful edit operation
+                    if (!currentTagId || currentTagId.length === 0) {
+                        console.warn('Skipping edit operation due to missing Tag ID:', prompt);
+                        showToast(`Skipped edit: Missing Tag ID for prompt: "${prompt.substring(0, 30)}..."`);
+                        return null; 
+                    }
+                    
+                    return {
+                        type: "edit_element",
+                        tagId: currentTagId,
+                        prompt: prompt,
+                    };
+                }).filter(op => op !== null); // Filter out skipped operations
+
+                if (operations.length === 0) {
+                    closeEditModal();
+                    return;
+                }
+
                 const editPayload = {
                     version: 1,
-                    operations: Array.from(editContainers.querySelectorAll('.edit-container')).map(container => {
-                        const textarea = container.querySelector('textarea');
-                        // Retrieve tagId from data attribute for robustness
-                        const currentTagId = container.getAttribute('data-tag-id');
-                        
-                        return {
-                            type: "edit_element",
-                            tagId: currentTagId,
-                            prompt: textarea.value.trim(),
-                        };
-                    }).filter(op => op.prompt !== ''), // Filter out empty prompts
+                    operations: operations,
                 };
+                
                 parentApi.navigate({
                     method: "eval",
                     command: `!edit ${JSON.stringify(editPayload)}`,
