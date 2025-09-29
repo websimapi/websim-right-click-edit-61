@@ -946,11 +946,15 @@
                     operations: operations,
                 };
 
-                // --- Start verbose logging for debugging (User Request) ---
-                console.log("--- Edit Submission Attempt ---");
-                console.log("Raw Edit Payload:", JSON.parse(JSON.stringify(editPayload)));
+                const jsonPayloadString = JSON.stringify(editPayload);
+                // Fix attempt based on debugging: Wrap the JSON payload in single quotes for robust command argument passing 
+                // in the websim shell environment, ensuring the JSON string is treated as a single argument to !edit.
+                const command = `!edit '${jsonPayloadString}'`;
                 
-                const command = `!edit ${JSON.stringify(editPayload)}`;
+                // --- Start verbose logging for debugging (User Request) ---
+                console.log("--- Edit Submission Attempt (Start) ---");
+                console.log("Raw Edit Payload:", JSON.parse(JSON.stringify(editPayload)));
+                console.log("JSON Payload String:", jsonPayloadString);
                 
                 console.log("Full Command String (to be sent via parentApi.navigate):", command);
                 
@@ -963,14 +967,17 @@
                     console.log(`  Prompt Snippet: "${op.prompt.substring(0, 100).replace(/\n/g, '\\n')}..."`);
                 });
                 
-                console.log("-------------------------------");
-                // --- End verbose logging for debugging ---
-
-                parentApi.navigate({
+                const navigatePayload = {
                     method: "eval",
                     command: command,
                     source: "edit",
-                }).catch(error => console.error('Error during edit:', error));
+                };
+                
+                console.log("Payload object sent to parentApi.navigate:", JSON.parse(JSON.stringify(navigatePayload)));
+                console.log("--- Edit Submission Attempt (End) ---");
+                // --- End verbose logging for debugging ---
+
+                parentApi.navigate(navigatePayload).catch(error => console.error('Error during edit:', error));
                 closeEditModal();
             }
 
