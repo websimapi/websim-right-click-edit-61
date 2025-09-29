@@ -539,7 +539,8 @@ function handleSubmit(modal) {
         const currentTagId = container.getAttribute('data-tag-id');
         const currentType = container.getAttribute('data-type').toUpperCase();
 
-        const rawPrompt = textarea.value.trim();
+        // Safely retrieve and trim the prompt value to prevent 'Cannot read properties of undefined (reading 'trim')'
+        const rawPrompt = (textarea ? textarea.value : '').trim();
 
         return {
             tagId: currentTagId,
