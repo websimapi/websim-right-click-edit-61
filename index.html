@@ -5,7 +5,7 @@
         <h2>Feature 1: Core</h2>
         <p>This contains the core CSS and JS for the base page functionality</p>
     </div>
-    <div id="feature1-css" class="corner-button copy-css" onclick="copyToClipboard('feature1-css', 'css')">
+    <div id="feature1-css" class="corner-button copy-css" onclick="showDropdown(event, 'feature1-css', 'css')">
         CSS
         <style>
             body {
@@ -174,91 +174,10 @@
             }
         </style>
     </div>
-    <div id="feature1-js" class="corner-button copy-js" onclick="copyToClipboard('feature1-js', 'js')">
+    <div id="feature1-js" class="corner-button copy-js" onclick="showDropdown(event, 'feature1-js', 'js')">
     JS
     <script>
-        function handleFrameClick(event, element) {
-            const rect = element.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            
-            if (x < 40 && y < 25) {
-                copyToClipboard(element.id, 'all');
-                event.stopPropagation();
-            }
-        }
-        
-        function handleContentClick(event, element) {
-            const rect = element.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            
-            if (x > rect.width - 40 && y < 25) {
-                copyToClipboard(element.id, 'html');
-                event.stopPropagation();
-            }
-        }
-        
-        function copyToClipboard(sectionId, type) {
-            const section = document.getElementById(sectionId);
-            let content = '';
-            let elementToAnimate = null;
-        
-            if (type === 'all') {
-                content = section.outerHTML;
-                elementToAnimate = section;
-            } else if (type === 'html') {
-                const htmlSection = section;
-                content = htmlSection.innerHTML;
-                elementToAnimate = htmlSection;
-            } else if (type === 'css') {
-                const styleTag = section.querySelector('style');
-                content = styleTag ? styleTag.textContent : '';
-                elementToAnimate = section.querySelector('.copy-css');
-            } else if (type === 'js') {
-                const scriptTag = section.querySelector('script');
-                content = scriptTag ? scriptTag.textContent : '';
-                elementToAnimate = section.querySelector('.copy-js');
-            }
-        
-            navigator.clipboard.writeText(content).then(() => {
-                if (elementToAnimate) {
-                    elementToAnimate.classList.add('copy-feedback');
-                    setTimeout(() => {
-                        elementToAnimate.classList.remove('copy-feedback');
-                    }, 500);
-                }
-                // Show toast message
-                showToast(`${type.toUpperCase()} content copied to clipboard!`);
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                showToast('Failed to copy content. Please try again.');
-            });
-        }
-
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.textContent = message;
-            toast.style.position = 'fixed';
-            toast.style.bottom = '20px';
-            toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
-            toast.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-            toast.style.color = 'white';
-            toast.style.padding = '10px 20px';
-            toast.style.borderRadius = '5px';
-            toast.style.zIndex = '1000';
-            toast.style.transition = 'opacity 0.3s ease-in-out';
-            
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => {
-                    document.body.removeChild(toast);
-                }, 300);
-            }, 3000);
-        }
+        /* JS logic moved to app.js */
     </script>
 </div>
 </div>
@@ -270,13 +189,13 @@
         <h2>Feature 2: Improved Template</h2>
         <p>Both copy triggers are now integrated into the corners! Hover in either top corner to see them.</p>
     </div>
-    <div id="feature2-css" class="corner-button copy-css" onclick="copyToClipboard('feature2-css', 'css')">
+    <div id="feature2-css" class="corner-button copy-css" onclick="showDropdown(event, 'feature2-css', 'css')">
     CSS
     <style>
     /* CSS content here */
     </style>
 </div>
-    <div id="feature2-js" class="corner-button copy-js" onclick="copyToClipboard('feature2-js', 'js')">
+    <div id="feature2-js" class="corner-button copy-js" onclick="showDropdown(event, 'feature2-js', 'js')">
         JS
         <script>
         // JavaScript content here
@@ -290,13 +209,13 @@
         <h2>Feature 3: Improved Template</h2>
         <p>Both copy triggers are now integrated into the corners! Hover in either top corner to see them.</p>
     </div>
-    <div id="feature3-css" class="corner-button copy-css" onclick="copyToClipboard('feature3-css', 'css')">
+    <div id="feature3-css" class="corner-button copy-css" onclick="showDropdown(event, 'feature3-css', 'css')">
         CSS
         <style>
         /* CSS content here */
         </style>
     </div>
-    <div id="feature3-js" class="corner-button copy-js" onclick="copyToClipboard('feature3-js', 'js')">
+    <div id="feature3-js" class="corner-button copy-js" onclick="showDropdown(event, 'feature3-js', 'js')">
         JS
         <script>
         // JavaScript content here
@@ -310,13 +229,13 @@
         <h2>Feature 4: Improved Template</h2>
         <p>Both copy triggers are now integrated into the corners! Hover in either top corner to see them.</p>
     </div>
-    <div id="feature4-css" class="corner-button copy-css" onclick="copyToClipboard('feature4-css', 'css')">
+    <div id="feature4-css" class="corner-button copy-css" onclick="showDropdown(event, 'feature4-css', 'css')">
         CSS
         <style>
         /* CSS content here */
         </style>
     </div>
-    <div id="feature4-js" class="corner-button copy-js" onclick="copyToClipboard('feature4-js', 'js')">
+    <div id="feature4-js" class="corner-button copy-js" onclick="showDropdown(event, 'feature4-js', 'js')">
         JS
         <script>
         // JavaScript content here
@@ -330,13 +249,13 @@
         <h2>Feature 5: Improved Template</h2>
         <p>Both copy triggers are now integrated into the corners! Hover in either top corner to see them.</p>
     </div>
-    <div id="feature5-css" class="corner-button copy-css" onclick="copyToClipboard('feature5-css', 'css')">
+    <div id="feature5-css" class="corner-button copy-css" onclick="showDropdown(event, 'feature5-css', 'css')">
         CSS
         <style>
         /* CSS content here */
         </style>
     </div>
-    <div id="feature5-js" class="corner-button copy-js" onclick="copyToClipboard('feature5-js', 'js')">
+    <div id="feature5-js" class="corner-button copy-js" onclick="showDropdown(event, 'feature5-js', 'js')">
         JS
         <script>
         // JavaScript content here
@@ -350,13 +269,13 @@
         <h2>Feature 6: Improved Template</h2>
         <p>Both copy triggers are now integrated into the corners! Hover in either top corner to see them.</p>
     </div>
-    <div id="feature6-css" class="corner-button copy-css" onclick="copyToClipboard('feature6-css', 'css')">
+    <div id="feature6-css" class="corner-button copy-css" onclick="showDropdown(event, 'feature6-css', 'css')">
         CSS
         <style>
         /* CSS content here */
         </style>
     </div>
-    <div id="feature6-js" class="corner-button copy-js" onclick="copyToClipboard('feature6-js', 'js')">
+    <div id="feature6-js" class="corner-button copy-js" onclick="showDropdown(event, 'feature6-js', 'js')">
         JS
         <script>
         // JavaScript content here
@@ -370,13 +289,13 @@
         <h2>Feature 7: Improved Template</h2>
         <p>Both copy triggers are now integrated into the corners! Hover in either top corner to see them.</p>
     </div>
-    <div id="feature7-css" class="corner-button copy-css" onclick="copyToClipboard('feature7-css', 'css')">
+    <div id="feature7-css" class="corner-button copy-css" onclick="showDropdown(event, 'feature7-css', 'css')">
         CSS
         <style>
         /* CSS content here */
         </style>
     </div>
-    <div id="feature7-js" class="corner-button copy-js" onclick="copyToClipboard('feature7-js', 'js')">
+    <div id="feature7-js" class="corner-button copy-js" onclick="showDropdown(event, 'feature7-js', 'js')">
         JS
         <script>
         // JavaScript content here
@@ -390,13 +309,13 @@
         <h2>Feature 8: Improved Template</h2>
         <p>Both copy triggers are now integrated into the corners! Hover in either top corner to see them.</p>
     </div>
-    <div id="feature8-css" class="corner-button copy-css" onclick="copyToClipboard('feature8-css', 'css')">
+    <div id="feature8-css" class="corner-button copy-css" onclick="showDropdown(event, 'feature8-css', 'css')">
     CSS
     <style>
     /* CSS content here */
     </style>
 </div>
-    <div id="feature8-js" class="corner-button copy-js" onclick="copyToClipboard('feature8-js', 'js')">
+    <div id="feature8-js" class="corner-button copy-js" onclick="showDropdown(event, 'feature8-js', 'js')">
         JS
         <script>
         // JavaScript content here
@@ -410,13 +329,13 @@
         <h2>Feature 9: Improved Template</h2>
         <p>Both copy triggers are now integrated into the corners! Hover in either top corner to see them.</p>
     </div>
-    <div id="feature9-css" class="corner-button copy-css" onclick="copyToClipboard('feature9-css', 'css')">
+    <div id="feature9-css" class="corner-button copy-css" onclick="showDropdown(event, 'feature9-css', 'css')">
         CSS
         <style>
         /* CSS content here */
         </style>
     </div>
-    <div id="feature9-js" class="corner-button copy-js" onclick="copyToClipboard('feature9-js', 'js')">
+    <div id="feature9-js" class="corner-button copy-js" onclick="showDropdown(event, 'feature9-js', 'js')">
         JS
         <script>
         // JavaScript content here
@@ -433,7 +352,7 @@
         <button onclick="toggleComponent('js')" class="toggle-js">JS</button>
         <button onclick="toggleAllComponents()" class="toggle-all">ALL</button>
     </div>
-    <button id="toggleDragMode">Toggle Drag Mode</button>
+    <button id="toggleDragMode" onclick="toggleDragMode()">Toggle Drag Mode</button>
 </div>
     <div id="feature10-css" class="corner-button copy-css" onclick="showDropdown(event, 'feature10-css', 'css')">
     CSS
@@ -678,431 +597,10 @@
     <div id="feature10-js" class="corner-button copy-js" onclick="showDropdown(event, 'feature10-js', 'js')">
         JS
         <script>
-        function toggleComponent(type) {
-            const frames = document.querySelectorAll('.feature-frame');
-            frames.forEach(frame => {
-                if (type === 'html') {
-                    const htmlContent = frame.querySelector('.feature-content');
-                    htmlContent.classList.toggle('no-copy');
-                } else if (type === 'css') {
-                    const cssButton = frame.querySelector('.copy-css');
-                    cssButton.classList.toggle('hidden');
-                } else if (type === 'js') {
-                    const jsButton = frame.querySelector('.copy-js');
-                    jsButton.classList.toggle('hidden');
-                }
-            });
-        }
-
-        function toggleAllComponents() {
-            const allFrames = document.querySelectorAll('.feature-frame');
-            allFrames.forEach(frame => {
-                frame.classList.toggle('no-copy');
-            });
-        }
-
-        let isDragging = false;
-        let currentFeature = null;
-        let offsetX, offsetY;
-        let dragMode = false;
-
-        const toggleDragModeBtn = document.getElementById('toggleDragMode');
-        toggleDragModeBtn.addEventListener('click', toggleDragMode);
-
-        function toggleDragMode() {
-            dragMode = !dragMode;
-            document.querySelectorAll('.feature-frame').forEach(feature => {
-                if (dragMode) {
-                    feature.classList.add('draggable');
-                } else {
-                    feature.classList.remove('draggable');
-                }
-            });
-            toggleDragModeBtn.textContent = dragMode ? 'Exit Drag Mode' : 'Enter Drag Mode';
-        }
-
-        document.querySelectorAll('.feature-frame').forEach(feature => {
-            feature.addEventListener('mousedown', startDragging);
-        });
-
-        document.addEventListener('mousemove', drag);
-        document.addEventListener('mouseup', stopDragging);
-
-        function startDragging(e) {
-            if (!dragMode) return;
-            isDragging = true;
-            currentFeature = e.currentTarget;
-            offsetX = e.clientX - currentFeature.getBoundingClientRect().left;
-            offsetY = e.clientY - currentFeature.getBoundingClientRect().top;
-        }
-
-        function drag(e) {
-            if (!isDragging || !dragMode) return;
-            const x = e.clientX - offsetX;
-            const y = e.clientY - offsetY;
-            currentFeature.style.left = `${x}px`;
-            currentFeature.style.top = `${y}px`;
-        }
-
-        function stopDragging() {
-            if (isDragging && currentFeature) {
-                saveFeaturePosition(currentFeature);
-            }
-            isDragging = false;
-            currentFeature = null;
-        }
-
-        function saveFeaturePosition(feature) {
-            const id = feature.id;
-            const position = {
-                left: feature.style.left,
-                top: feature.style.top,
-                width: feature.style.width,
-                height: feature.style.height
-            };
-            localStorage.setItem(id, JSON.stringify(position));
-        }
-
-        function loadFeaturePositions() {
-            document.querySelectorAll('.feature-frame').forEach(feature => {
-                const id = feature.id;
-                const savedPosition = localStorage.getItem(id);
-                if (savedPosition) {
-                    const position = JSON.parse(savedPosition);
-                    feature.style.left = position.left;
-                    feature.style.top = position.top;
-                    feature.style.width = position.width;
-                    feature.style.height = position.height;
-                } else {
-                    feature.style.left = `${Math.random() * (window.innerWidth - 300)}px`;
-                    feature.style.top = `${Math.random() * (window.innerHeight - 200)}px`;
-                }
-            });
-        }
-
-        document.querySelectorAll('.feature-frame').forEach(feature => {
-            feature.addEventListener('mouseup', () => {
-                saveFeaturePosition(feature);
-            });
-        });
-
-        window.addEventListener('load', loadFeaturePositions);
-
-        // New code for dropdown and edit functionality
-        const WEBSIM_TAG_ID_ATTRIBUTE = "w-tid";
-
-        function createProxy(name, targetOrigin, target) {
-          return new Proxy(
-            {},
-            {
-              get(_, fn) {
-                return (...args) => {
-                  return new Promise((resolve, reject) => {
-                    const id = `rpc:${Math.random().toString(36).slice(2)}`;
-                    const handler = (event) => {
-                      if (
-                        event.isTrusted &&
-                        event.source === target &&
-                        event.data.id === id
-                      ) {
-                        window.removeEventListener("message", handler);
-                        if (event.data.error) {
-                          reject(event.data.error);
-                          return;
-                        }
-                        resolve(event.data.result);
-                      }
-                    };
-                    window.addEventListener("message", handler);
-                    target.postMessage({ id, name, fn, args }, targetOrigin);
-                  });
-                };
-              },
-            }
-          );
-        }
-
-        const parentApi = createProxy(
-          "parent",
-          window.__WEBSIM_DATA__.hostOrigin,
-          window.parent
-        );
-
-        function showDropdown(event, elementId, type) {
-            event.stopPropagation();
-            const dropdown = document.createElement('div');
-            dropdown.className = 'dropdown';
-            dropdown.innerHTML = `
-                <button onclick="handleDropdownAction('${elementId}', '${type}', 'edit')">Edit</button>
-                <button onclick="handleDropdownAction('${elementId}', '${type}', 'copy')">Copy</button>
-            `;
-            
-            const rect = event.target.getBoundingClientRect();
-            dropdown.style.left = `${event.clientX}px`;
-            dropdown.style.top = `${event.clientY}px`;
-            
-            document.body.appendChild(dropdown);
-            dropdown.style.display = 'block';
-
-            // Close dropdown when clicking outside
-            const closeDropdown = (e) => {
-                if (!dropdown.contains(e.target)) {
-                    document.body.removeChild(dropdown);
-                    document.removeEventListener('click', closeDropdown);
-                }
-            };
-            setTimeout(() => {
-                document.addEventListener('click', closeDropdown);
-            }, 0);
-        }
-
-        function handleDropdownAction(elementId, type, action) {
-            if (action === 'edit') {
-                const element = document.getElementById(elementId);
-                const tagId = element.getAttribute(WEBSIM_TAG_ID_ATTRIBUTE);
-                showEditModal(element, tagId, type);
-            } else if (action === 'copy') {
-                copyToClipboard(elementId, type);
-            }
-        }
-
-        let currentEditModal = null;
-
-        function showEditModal(target, tagId, type) {
-            if (currentEditModal) {
-                // If a modal is already open, update it instead of creating a new one
-                addEditContainer(currentEditModal, tagId, type);
-                return;
-            }
-
-            const modal = document.createElement('div');
-            modal.className = 'websim-edit-modal';
-            modal.innerHTML = `
-                <h3>Edit Content</h3>
-                <div id="edit-containers"></div>
-                <button class="add-edit">Add Edit</button>
-                <div class="button-container">
-                    <button class="submit">Submit</button>
-                    <button class="cancel">Cancel</button>
-                </div>
-            `;
-            document.body.appendChild(modal);
-
-            const editContainers = modal.querySelector('#edit-containers');
-            const addEditButton = modal.querySelector('.add-edit');
-            const submitButton = modal.querySelector('.submit');
-            const cancelButton = modal.querySelector('.cancel');
-
-            function addEditContainer(modal, initialTagId = tagId, initialType = type) {
-                const editContainers = modal.querySelector('#edit-containers');
-                const editContainer = document.createElement('div');
-                editContainer.className = 'edit-container';
-                
-                // Store tagId and type in data attributes for robust retrieval
-                editContainer.setAttribute('data-tag-id', initialTagId);
-                editContainer.setAttribute('data-type', initialType.toLowerCase());
-
-                editContainer.innerHTML = `
-                    <div class="edit-header">Edit ${initialType.toUpperCase()} Content (Tag ID: ${initialTagId})</div>
-                    <textarea placeholder="Enter your edit prompt here..."></textarea>
-                    <button class="remove-edit">Remove Edit</button>
-                `;
-                editContainers.appendChild(editContainer);
-
-                const removeButton = editContainer.querySelector('.remove-edit');
-                removeButton.addEventListener('click', () => {
-                    editContainers.removeChild(editContainer);
-                });
-            }
-
-            addEditContainer(modal); // Add the first edit container
-
-            addEditButton.addEventListener('click', () => {
-                const newTagId = prompt("Enter the tag ID for the new edit:");
-                const newType = prompt("Enter the type for the new edit (HTML/CSS/JS/ALL):");
-                if (newTagId && newType) {
-                    addEditContainer(modal, newTagId, newType);
-                }
-            });
-
-            modal.style.display = 'block';
-            editContainers.querySelector('textarea').focus();
-
-            function handleSubmit() {
-                const operations = Array.from(editContainers.querySelectorAll('.edit-container')).map(container => {
-                        const textarea = container.querySelector('textarea');
-                        // Retrieve tagId from data attribute for robustness
-                        const currentTagId = container.getAttribute('data-tag-id');
-                        
-                        return {
-                            type: "edit_element",
-                            tagId: currentTagId,
-                            prompt: textarea.value.trim(),
-                        };
-                    }).filter(op => op.prompt !== ''); // Filter out empty prompts
-
-                if (operations.length === 0) {
-                    showToast('No prompt provided for edit.');
-                    closeEditModal();
-                    return;
-                }
-
-                const editPayload = {
-                    version: 1,
-                    operations: operations,
-                };
-
-                const jsonPayloadString = JSON.stringify(editPayload);
-                // Fixing edit route parsing issue by removing external quotes around JSON payload.
-                const command = `!edit ${jsonPayloadString}`;
-                
-                // --- Start verbose logging for debugging (Extremely Verbose Logging) ---
-                console.groupCollapsed("--- Edit Submission Attempt (Extremely Verbose Logging) ---");
-                console.log("1. Edit Payload Object (Structured):", JSON.parse(JSON.stringify(editPayload)));
-                console.log("2. JSON Stringified Payload:", jsonPayloadString);
-                console.log("3. Full Command String (Input for navigation):", command);
-                
-                const navigatePayload = {
-                    method: "eval",
-                    command: command,
-                    source: "edit",
-                };
-                
-                console.log("4. Final Payload object sent via parentApi.navigate:", navigatePayload);
-
-                console.log("5. Command String Length:", command.length);
-                
-                // Debugging characters to catch invisible issues or unexpected encoding
-                console.log("6. Command String Characters (Hex):", Array.from(command).map(c => c.charCodeAt(0).toString(16)).join(' '));
-
-                // Logging URL encoded version, just in case 'navigate' treats it as a URL parameter
-                console.log("7. URL Encoded Command String:", encodeURIComponent(command));
-                
-                console.groupEnd();
-                // --- End verbose logging for debugging ---
-
-                parentApi.navigate(navigatePayload).catch(error => console.error('Error during edit:', error));
-                closeEditModal();
-            }
-
-            function closeEditModal() {
-                document.body.removeChild(modal);
-                currentEditModal = null;
-            }
-
-            submitButton.onclick = handleSubmit;
-            cancelButton.onclick = closeEditModal;
-
-            modal.addEventListener('keydown', (e) => {
-                if (e.key === 'Enter' && e.ctrlKey) {
-                    handleSubmit();
-                }
-                if (e.key === 'Escape') {
-                    closeEditModal();
-                }
-            });
-
-            currentEditModal = modal;
-        }
-
-        function copyToClipboard(sectionId, type) {
-            const section = document.getElementById(sectionId);
-            let content = '';
-
-            if (type === 'html') {
-                const htmlSection = section.closest('.feature-frame').querySelector('.feature-content');
-                content = htmlSection.innerHTML;
-            } else if (type === 'css') {
-                const styleTag = section.querySelector('style');
-                content = styleTag ? styleTag.textContent : '';
-            } else if (type === 'js') {
-                const scriptTag = section.querySelector('script');
-                content = scriptTag ? scriptTag.textContent : '';
-            } else if (type === 'all') {
-                const frame = section.closest('.feature-frame');
-                content = frame.outerHTML;
-            }
-
-            navigator.clipboard.writeText(content).then(() => {
-                showToast(`${type.toUpperCase()} content copied to clipboard!`);
-            }).catch(err => {
-                console.error('Failed to copy: ', err);
-                showToast('Failed to copy content. Please try again.');
-            });
-        }
-
-        function showToast(message) {
-            const toast = document.createElement('div');
-            toast.textContent = message;
-            toast.style.position = 'fixed';
-            toast.style.bottom = '20px';
-            toast.style.left = '50%';
-            toast.style.transform = 'translateX(-50%)';
-            toast.style.backgroundColor = 'rgba(0, 0, 0, 0.7)';
-            toast.style.color = 'white';
-            toast.style.padding = '10px 20px';
-            toast.style.borderRadius = '5px';
-            toast.style.zIndex = '1000';
-            toast.style.transition = 'opacity 0.3s ease-in-out';
-            
-            document.body.appendChild(toast);
-            
-            setTimeout(() => {
-                toast.style.opacity = '0';
-                setTimeout(() => {
-                    document.body.removeChild(toast);
-                }, 300);
-            }, 3000);
-        }
-
-        // Modify the handleFrameClick function to show dropdown for ALL
-        function handleFrameClick(event, element) {
-            const rect = element.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            
-            if (x < 40 && y < 25) {
-                showDropdown(event, element.id, 'all');
-                event.stopPropagation();
-            }
-        }
-
-        // Modify the handleContentClick function to show dropdown for HTML
-        function handleContentClick(event, element) {
-            const rect = element.getBoundingClientRect();
-            const x = event.clientX - rect.left;
-            const y = event.clientY - rect.top;
-            
-            if (x > rect.width - 40 && y < 25) {
-                showDropdown(event, element.id, 'html');
-                event.stopPropagation();
-            }
-        }
-
-        // Apply the new functionality to all feature frames
-        document.querySelectorAll('.feature-frame').forEach(frame => {
-            frame.onclick = (event) => handleFrameClick(event, frame);
-            const contentDiv = frame.querySelector('.feature-content');
-            if (contentDiv) {
-                contentDiv.onclick = (event) => {
-                    // Check if the click is on a toggle button
-                    if (!event.target.closest('.toggle-buttons')) {
-                        handleContentClick(event, contentDiv);
-                    }
-                };
-            }
-            const cssButton = frame.querySelector('.copy-css');
-            if (cssButton) {
-                cssButton.onclick = (event) => showDropdown(event, cssButton.id, 'css');
-            }
-            const jsButton = frame.querySelector('.copy-js');
-            if (jsButton) {
-                jsButton.onclick = (event) => showDropdown(event, jsButton.id, 'js');
-            }
-        });
+        /* JS logic moved to app.js */
         </script>
     </div>
 </div>
 </div>
-<script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
+<script type="module" src="./app.js"></script><script defer src="https://static.cloudflareinsights.com/beacon.min.js/v8c78df7c7c0f484497ecbca7046644da1771523124516" integrity="sha512-8DS7rgIrAmghBFwoOTujcf6D9rXvH8xm8JQ1Ja01h9QX8EzXldiszufYa4IFfKdLUKTTrnSFXLDkUEOTrZQ8Qg==" data-cf-beacon='{"version":"2024.11.0","token":"4c6229722a6346bc8eb5cb0e5eae5d41","server_timing":{"name":{"cfCacheStatus":true,"cfEdge":true,"cfExtPri":true,"cfL4":true,"cfOrigin":true,"cfSpeedBrain":true},"location_startswith":null}}' crossorigin="anonymous"></script>
 </body></html>
