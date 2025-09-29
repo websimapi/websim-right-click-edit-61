@@ -461,10 +461,21 @@ function startDragging(e) {
     // but not internal components or corners.
     if (!dragMode || e.target.closest('.corner-button') || e.target.closest('.feature-content')) return;
 
+    const frame = e.currentTarget;
+    const rect = frame.getBoundingClientRect();
+    const x = e.clientX - rect.left;
+    const y = e.clientY - rect.top;
+
+    // Check if the click is in the top-left 'ALL' corner trigger area (40px x 25px)
+    if (x < 40 && y < 25) {
+        // Prevent drag initiation in the corner area reserved for the 'ALL' menu.
+        return; 
+    }
+
     isDragging = true;
-    currentFeature = e.currentTarget;
-    offsetX = e.clientX - currentFeature.getBoundingClientRect().left;
-    offsetY = e.clientY - currentFeature.getBoundingClientRect().top;
+    currentFeature = frame;
+    offsetX = e.clientX - rect.left;
+    offsetY = e.clientY - rect.top;
 
     currentFeature.style.resize = 'none';
 }
@@ -528,11 +539,9 @@ function handleFrameClick(event, element) {
         const frame = element.closest('.feature-frame');
         if (frame) {
              showDropdown(event, frame.id, 'all');
-             event.stopPropagation();
         }
-    }
-    // Prevent dragging if corner is clicked
-    if (x < 40 && y < 25) {
+        // Stop propagation if we clicked the corner area, ensuring the click event is handled here 
+        // and doesn't propagate up, especially if a dropdown was initiated.
         event.stopPropagation();
     }
 }
